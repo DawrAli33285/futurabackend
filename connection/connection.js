@@ -1,26 +1,27 @@
 const mongoose = require('mongoose');
 const dns = require('dns');
 
-// Force reliable public DNS resolvers to avoid flaky local router DNS
-// causing SRV lookup timeouts (ECONNREFUSED on querySrv)
+// Avoid flaky local DNS resolver issues with SRV lookups
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
-mongoose.connect(process.env.CONNECTION_URL)
+const uri = "mongodb+srv://gulfambibi33285_db_user:DDOl8nlXnuE3acSA@cluster0.uxaqvjh.mongodb.net/";
+
+console.log('Attempting to connect to MongoDB...');
+
+mongoose.connect(uri)
   .then(() => {
-    console.log('MongoDB connected');
+    console.log('✅ MongoDB connected successfully');
+    console.log('Connected to database:', mongoose.connection.name);
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
-    // Don't crash the whole process on a transient connection failure;
-    // mongoose will keep retrying in the background.
+    console.error('❌ MongoDB connection FAILED');
+    console.error('Error name:', err.name);
+    console.error('Error message:', err.message);
+    console.error('Full error:', err);
   });
 
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB runtime error:', err.message);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.warn('MongoDB disconnected, attempting to reconnect...');
 });
 
 module.exports = mongoose.connection;
